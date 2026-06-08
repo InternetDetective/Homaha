@@ -1,326 +1,401 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
   <title>Omaha Hutchinson Point Trainer</title>
   <style>
-    :root {
-      --bg: #111318;
-      --panel: #1b1f2a;
-      --panel2: #242a38;
-      --text: #f5f5f5;
-      --muted: #b7bdca;
-      --accent: #80d6ff;
-      --good: #7ee787;
-      --bad: #ff7b72;
-      --warn: #f2cc60;
-      --border: #333b4f;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #1f2635, var(--bg));
-      color: var(--text);
-      line-height: 1.45;
-    }
-    .wrap { max-width: 1050px; margin: 0 auto; padding: 24px; }
-    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 44px); }
-    h2 { margin: 0 0 14px; }
-    p { color: var(--muted); }
-    .tabs { display: flex; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
-    button, select {
-      border: 1px solid var(--border);
-      background: var(--panel2);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-    button:hover { border-color: var(--accent); }
-    button.active { background: var(--accent); color: #071018; border-color: var(--accent); font-weight: 700; }
-    .grid { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 12px; }
-    @media (max-width: 650px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    .cardPicker, .panel {
-      background: rgba(27,31,42,.92);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.22);
-    }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .hidden { display: none; }
-    .scoreBig { font-size: 54px; font-weight: 800; margin: 10px 0 0; }
-    .verdict { font-weight: 700; margin-top: 4px; }
-    .good { color: var(--good); }
-    .bad { color: var(--bad); }
-    .warn { color: var(--warn); }
-    .breakdown { margin-top: 18px; display: grid; gap: 12px; }
-    .breakItem { background: var(--panel2); border: 1px solid var(--border); border-radius: 14px; padding: 13px 14px; }
-    .breakItem strong { color: var(--accent); }
-    .hand { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
-    .playingCard {
-      width: 72px; height: 98px; border-radius: 12px; background: #f7f7f4; color: #10131a;
-      display: flex; flex-direction: column; justify-content: space-between; padding: 8px;
-      font-size: 24px; font-weight: 800; box-shadow: 0 6px 16px rgba(0,0,0,.35);
-    }
-    .red { color: #c62828; }
-    .black { color: #111; }
-    .small { font-size: 13px; color: var(--muted); }
-    .choices { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 10px; max-width: 460px; }
-    .choice.correct { border-color: var(--good); background: rgba(126,231,135,.14); }
-    .choice.wrong { border-color: var(--bad); background: rgba(255,123,114,.12); }
-    details { margin-top: 14px; }
-    summary { cursor: pointer; color: var(--accent); font-weight: 700; }
-    code { color: var(--accent); }
+    body{font-family:Arial,sans-serif;max-width:980px;margin:30px auto;padding:0 16px;line-height:1.4}
+    h1{margin-bottom:4px}
+    .card{border:1px solid #ddd;border-radius:10px;padding:16px;margin:16px 0}
+    select,button{font-size:16px;padding:8px;margin:4px}
+    button{cursor:pointer}
+    .hand{font-size:28px;margin:12px 0}
+    .red{color:#b00020}.black{color:#111}
+    .good{color:green;font-weight:bold}.bad{color:#b00020;font-weight:bold}
+    .breakdown{white-space:pre-wrap;background:#f7f7f7;padding:12px;border-radius:8px}
+    .answers button{display:block;width:220px;text-align:left;margin:8px 0}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Omaha Hutchinson Point Trainer</h1>
-    <p>Score Omaha starting hands and drill the Hutchinson point system with quick multiple-choice reps.</p>
+<h1>Omaha Hutchinson Point Trainer</h1>
+<p>Enter a four-card Omaha hand or use quiz mode.</p>
 
-    <div class="tabs">
-      <button id="scoreTab" class="active">Hand scorer</button>
-      <button id="quizTab">Quiz mode</button>
-    </div>
+<div class="card">
+  <h2>Score a Hand</h2>
+  <div id="selectors"></div>
+  <button onclick="scoreSelected()">Score Hand</button>
+  <button onclick="randomizeHand()">Random Hand</button>
+  <div id="scoreOut"></div>
+</div>
 
-    <section id="scoreView" class="panel">
-      <h2>Enter a 4-card Omaha hand</h2>
-      <div class="grid" id="pickers"></div>
-      <div class="row" style="margin-top:16px">
-        <button id="scoreBtn" class="active">Score hand</button>
-        <button id="randomBtn">Random hand</button>
-      </div>
-      <div id="scoreOutput"></div>
-    </section>
+<div class="card">
+  <h2>Quiz Mode</h2>
+  <button onclick="newQuiz()">New Question</button>
+  <div id="quizOut"></div>
+</div>
 
-    <section id="quizView" class="panel hidden">
-      <h2>Quiz mode</h2>
-      <p>What is this hand’s Hutchinson score?</p>
-      <div id="quizHand" class="hand"></div>
-      <div id="quizChoices" class="choices"></div>
-      <div class="row" style="margin-top:16px">
-        <button id="nextQuiz" class="active">Next hand</button>
-      </div>
-      <div id="quizResult"></div>
-    </section>
-
-    <section class="panel" style="margin-top:20px">
-      <h2>Implementation notes</h2>
-      <p class="small">This app follows the text you provided. For straight points, it scores every valid 2-card, 3-card, and 4-card rank subset with no more than a 3-card internal gap, then adds the applicable Ace/wheel bonuses. Duplicate ranks are collapsed for straight evaluation. Trips/quads receive no pair points, matching “award no points to any hand that contains three of the same rank.” The QQ99 example in the original text appears to say “pair of eights,” but it means nines.</p>
-    </section>
-  </div>
+<div class="card">
+  <h2>Built-in Test Cases</h2>
+  <button onclick="runTests()">Run Tests</button>
+  <div id="testOut"></div>
+</div>
 
 <script>
-const RANKS = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-const SUITS = ['s','h','d','c'];
-const SUIT_SYMBOL = {s:'♠', h:'♥', d:'♦', c:'♣'};
-const RED_SUITS = new Set(['h','d']);
-const RANK_VALUE = {A:14,K:13,Q:12,J:11,T:10,9:9,8:8,7:7,6:6,5:5,4:4,3:3,2:2};
-const SUITED_POINTS = {A:8,K:6,Q:5,J:4,T:3,9:3,8:2,7:1,6:1,5:1,4:1,3:1,2:1};
-const PAIR_POINTS = {A:18,K:16,Q:14,J:13,T:12,9:10,8:8,7:7,6:7,5:7,4:7,3:7,2:7};
-const WHEEL = new Set(['2','3','4','5']);
+const ranks = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+const rankVal = {A:14,K:13,Q:12,J:11,T:10,9:9,8:8,7:7,6:6,5:5,4:4,3:3,2:2};
+const suits = ["♠","♥","♦","♣"];
+const redSuits = new Set(["♥","♦"]);
 
-function cardText(card){ return card.rank + SUIT_SYMBOL[card.suit]; }
-function cardHtml(card){
-  const color = RED_SUITS.has(card.suit) ? 'red' : 'black';
-  return `<div class="playingCard ${color}"><span>${card.rank}</span><span>${SUIT_SYMBOL[card.suit]}</span></div>`;
+function cardText(c){
+  return `<span class="${redSuits.has(c.suit) ? 'red':'black'}">${c.rank}${c.suit}</span>`;
 }
-function fullDeck(){ return RANKS.flatMap(rank => SUITS.map(suit => ({rank, suit}))); }
+
+function makeDeck(){
+  const d=[];
+  for(const r of ranks) for(const s of suits) d.push({rank:r,suit:s});
+  return d;
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
 function randomHand(){
-  const deck = fullDeck();
-  const hand = [];
-  while(hand.length < 4){
-    const i = Math.floor(Math.random() * deck.length);
-    hand.push(deck.splice(i,1)[0]);
+  return shuffle(makeDeck()).slice(0,4);
+}
+
+function suitHeadPoints(rank){
+  if(rank==="A") return 8;
+  if(rank==="K") return 6;
+  if(rank==="Q") return 5;
+  if(rank==="J") return 4;
+  if(rank==="T" || rank==="9") return 3;
+  if(rank==="8") return 2;
+  return 1;
+}
+
+function pairPoints(rank){
+  return {A:18,K:16,Q:14,J:13,T:12,9:10,8:8,7:7,6:7,5:7,4:7,3:7,2:7}[rank];
+}
+
+function combos(arr,k){
+  const out=[];
+  function rec(start,cur){
+    if(cur.length===k){out.push(cur.slice());return;}
+    for(let i=start;i<arr.length;i++){
+      cur.push(arr[i]); rec(i+1,cur); cur.pop();
+    }
+  }
+  rec(0,[]);
+  return out;
+}
+
+function gapsFor(vals){
+  const sorted=[...vals].sort((a,b)=>a-b);
+  return (sorted[sorted.length-1]-sorted[0])-(sorted.length-1);
+}
+
+function straightCandidateScore(vals, usesAce, aceHighBroadway){
+  const n=vals.length;
+  const base = n===4 ? 25 : n===3 ? 18 : 8;
+  const gaps = gapsFor(vals);
+  if(gaps > 3) return null;
+  let score = base - Math.min(6, gaps*2);
+
+  // This matches the posted examples:
+  // AAKK gets A-K = 4 because 8 - 4 ace penalty.
+  // AKQT gets 23, because the original example does NOT apply the ace penalty there.
+  // A34 gets 12 because 18 - 2 gap - 4 ace penalty.
+  if(usesAce && !aceHighBroadway) score -= 4;
+
+  return {score, gaps};
+}
+
+function straightPoints(cards){
+  const uniqueRanks = [...new Set(cards.map(c=>c.rank))];
+  const candidates=[];
+
+  for(const n of [4,3,2]){
+    for(const rs of combos(uniqueRanks,n)){
+      const hasAce = rs.includes("A");
+
+      // Normal high-ace version.
+      let highVals = rs.map(r=>rankVal[r]);
+      let highBroadway = hasAce && Math.min(...highVals) >= 10;
+      let high = straightCandidateScore(highVals, hasAce, highBroadway);
+      if(high && high.score > 0){
+        candidates.push({
+          ranks: rs.slice(),
+          label: rs.join("-"),
+          size:n,
+          score:high.score,
+          gaps:high.gaps,
+          aceMode: hasAce ? "high" : "none",
+          key: rs.slice().sort().join("")
+        });
+      }
+
+      // Low-ace wheel version.
+      if(hasAce){
+        let lowVals = rs.map(r=>r==="A" ? 1 : rankVal[r]);
+        let low = straightCandidateScore(lowVals, true, false);
+        if(low && low.score > 0){
+          candidates.push({
+            ranks: rs.slice(),
+            label: rs.join("-") + " wheel",
+            size:n,
+            score:low.score,
+            gaps:low.gaps,
+            aceMode:"low",
+            key: rs.slice().sort().join("")
+          });
+        }
+      }
+    }
+  }
+
+  // Remove duplicate same-rank-set candidates, keep best version.
+  const bestByKey = new Map();
+  for(const c of candidates){
+    const old = bestByKey.get(c.key);
+    if(!old || c.score > old.score) bestByKey.set(c.key,c);
+  }
+
+  let clean = [...bestByKey.values()]
+    .sort((a,b)=>b.size-a.size || b.score-a.score);
+
+  // Count only maximal structures, so AKQT scores once as 23,
+  // not also every 3-card and 2-card subset.
+  const chosen=[];
+  for(const c of clean){
+    const cset = new Set(c.ranks);
+    let contained = false;
+    for(const p of chosen){
+      const pset = new Set(p.ranks);
+      let allIn = true;
+      for(const r of cset) if(!pset.has(r)) allIn=false;
+      if(allIn){contained=true;break;}
+    }
+    if(!contained) chosen.push(c);
+  }
+
+  const total = chosen.reduce((s,c)=>s+c.score,0);
+  return {total, chosen};
+}
+
+function scoreHand(cards){
+  let total=0;
+  let lines=[];
+
+  lines.push("HAND: " + cards.map(c=>c.rank+c.suit).join(" "));
+
+  // Suited points.
+  let suitTotal=0;
+  lines.push("\\nSUITED CARDS:");
+  for(const s of suits){
+    const suited = cards.filter(c=>c.suit===s);
+    if(suited.length >= 2){
+      suited.sort((a,b)=>rankVal[b.rank]-rankVal[a.rank]);
+      const pts = suitHeadPoints(suited[0].rank);
+      suitTotal += pts;
+      lines.push(`${s}: ${suited.map(c=>c.rank+c.suit).join(" ")} headed by ${suited[0].rank} = +${pts}`);
+      if(suited.length > 2){
+        suitTotal -= 2;
+        lines.push(`${s}: more than two cards of same suit = -2`);
+      }
+    }
+  }
+  if(suitTotal===0) lines.push("No suited holding = +0");
+  total += suitTotal;
+
+  // Pair points.
+  let pairTotal=0;
+  lines.push("\\nPAIRS:");
+  const counts={};
+  for(const c of cards) counts[c.rank]=(counts[c.rank]||0)+1;
+
+  const hasTripsOrQuads = Object.values(counts).some(n=>n>=3);
+  if(hasTripsOrQuads){
+    lines.push("Hand contains three or more of one rank, so pair section scores +0");
+  } else {
+    for(const r of ranks){
+      if(counts[r]===2){
+        const pts=pairPoints(r);
+        pairTotal += pts;
+        lines.push(`Pair of ${r}s = +${pts}`);
+      }
+    }
+    if(pairTotal===0) lines.push("No pair = +0");
+  }
+  total += pairTotal;
+
+  // Straight/connectedness.
+  lines.push("\\nCONNECTEDNESS:");
+  const st = straightPoints(cards);
+  if(st.chosen.length===0){
+    lines.push("No qualifying 2, 3, or 4 card straight structure = +0");
+  } else {
+    for(const c of st.chosen){
+      const base = c.size===4 ? 25 : c.size===3 ? 18 : 8;
+      let line = `${c.label}: ${c.size} cards base ${base}`;
+      if(c.gaps) line += `, ${c.gaps} gap(s) = -${Math.min(6,c.gaps*2)}`;
+      const usesAcePenalty = c.ranks.includes("A") && !(c.aceMode==="high" && c.ranks.every(r=>rankVal[r]>=10));
+      if(usesAcePenalty) line += `, ace penalty = -4`;
+      line += ` => +${c.score}`;
+      lines.push(line);
+    }
+  }
+  total += st.total;
+
+  lines.push(`\\nTOTAL: ${total} points`);
+  lines.push(`Approx win % in 10-handed all-in simulation: ${(total/2).toFixed(1)}%`);
+  lines.push(total>=32 ? "Guideline: playable / consider raising." :
+             total>=28 ? "Guideline: playable call threshold." :
+             "Guideline: below suggested playable threshold.");
+
+  return {total, breakdown:lines.join("\\n")};
+}
+
+function buildSelectors(){
+  const wrap=document.getElementById("selectors");
+  wrap.innerHTML="";
+  for(let i=0;i<4;i++){
+    const r=document.createElement("select");
+    r.id="r"+i;
+    for(const x of ranks){
+      const o=document.createElement("option");
+      o.value=x;o.textContent=x;r.appendChild(o);
+    }
+    const s=document.createElement("select");
+    s.id="s"+i;
+    for(const x of suits){
+      const o=document.createElement("option");
+      o.value=x;o.textContent=x;s.appendChild(o);
+    }
+    wrap.appendChild(r);wrap.appendChild(s);
+  }
+}
+
+function selectedHand(){
+  const hand=[];
+  const seen=new Set();
+  for(let i=0;i<4;i++){
+    const c={rank:document.getElementById("r"+i).value, suit:document.getElementById("s"+i).value};
+    const k=c.rank+c.suit;
+    if(seen.has(k)) throw new Error("Duplicate card: "+k);
+    seen.add(k);
+    hand.push(c);
   }
   return hand;
 }
-function compareHigh(a,b){ return RANK_VALUE[b.rank] - RANK_VALUE[a.rank]; }
 
-function combos(arr, k){
-  const out = [];
-  function rec(start, combo){
-    if(combo.length === k){ out.push([...combo]); return; }
-    for(let i=start; i<arr.length; i++){ combo.push(arr[i]); rec(i+1, combo); combo.pop(); }
-  }
-  rec(0, []); return out;
-}
-
-function straightInfoForRanks(ranks){
-  const values = ranks.map(r => RANK_VALUE[r]).sort((a,b)=>a-b);
-  const gaps = [];
-  for(let i=1; i<values.length; i++) gaps.push(values[i] - values[i-1] - 1);
-  const totalGaps = gaps.reduce((a,b)=>a+b,0);
-  const hasAce = ranks.includes('A');
-  if(totalGaps <= 3) return {valid:true, gaps:totalGaps, aceUsed:hasAce};
-  return {valid:false, gaps:totalGaps, aceUsed:hasAce};
-}
-
-function scoreHand(hand){
-  const breakdown = [];
-  let total = 0;
-
-  // Suited cards
-  const suitGroups = Object.fromEntries(SUITS.map(s => [s, hand.filter(c => c.suit === s)]));
-  let suitedScore = 0;
-  for(const suit of SUITS){
-    const cards = suitGroups[suit].sort(compareHigh);
-    if(cards.length >= 2){
-      const high = cards[0].rank;
-      const pts = SUITED_POINTS[high];
-      suitedScore += pts;
-      breakdown.push({section:'Suited cards', points: pts, text:`${cards.map(cardText).join(' ')}: highest card is ${high}, so +${pts}.`});
-      if(cards.length > 2){
-        suitedScore -= 2;
-        breakdown.push({section:'Suited penalty', points: -2, text:`${cards.length} cards share ${SUIT_SYMBOL[suit]}, so -2 for more than two cards of the same suit.`});
-      }
-    }
-  }
-  total += suitedScore;
-  if(suitedScore === 0) breakdown.push({section:'Suited cards', points:0, text:'No suit contains two or more cards, so +0.'});
-
-  // Pair cards
-  const rankCounts = {};
-  for(const c of hand) rankCounts[c.rank] = (rankCounts[c.rank] || 0) + 1;
-  let pairScore = 0;
-  const hasTripsOrQuads = Object.values(rankCounts).some(n => n >= 3);
-  if(hasTripsOrQuads){
-    breakdown.push({section:'Pairs', points:0, text:'Hand contains three or more of the same rank, so no pair points are awarded.'});
-  } else {
-    for(const rank of RANKS){
-      if(rankCounts[rank] === 2){
-        const pts = PAIR_POINTS[rank];
-        pairScore += pts;
-        breakdown.push({section:'Pairs', points:pts, text:`Pair of ${rank}s: +${pts}.`});
-      }
-    }
-    if(pairScore === 0) breakdown.push({section:'Pairs', points:0, text:'No pairs, so +0.'});
-  }
-  total += pairScore;
-
-  // Straight potential
-  let straightScore = 0;
-  const uniqueRanks = [...new Set(hand.map(c => c.rank))];
-  const straightBase = {2:8, 3:18, 4:25};
-  for(const k of [4,3,2]){
-    for(const subset of combos(uniqueRanks, k)){
-      const info = straightInfoForRanks(subset);
-      if(!info.valid) continue;
-      let pts = straightBase[k] - Math.min(info.gaps * 2, 6);
-      let text = `${subset.join('-')}: ${k} connected card${k>1?'s':''} base +${straightBase[k]}`;
-      if(info.gaps) text += `, minus ${Math.min(info.gaps * 2, 6)} for ${info.gaps} gap${info.gaps>1?'s':''}`;
-      if(info.aceUsed){ pts -= 4; text += ', minus 4 because an Ace is used'; }
-      text += ` = ${pts >= 0 ? '+' : ''}${pts}.`;
-      straightScore += pts;
-      breakdown.push({section:'Straight potential', points:pts, text});
-    }
-  }
-
-  const wheelCount = uniqueRanks.filter(r => WHEEL.has(r)).length;
-  if(uniqueRanks.includes('A') && wheelCount > 0){
-    const bonus = wheelCount >= 2 ? 12 : 6;
-    straightScore += bonus;
-    breakdown.push({section:'Ace-wheel bonus', points:bonus, text:`Ace plus ${wheelCount} wheel card${wheelCount>1?'s':''}: +${bonus}.`});
-  }
-  if(straightScore === 0) breakdown.push({section:'Straight potential', points:0, text:'No qualifying straight combinations, so +0.'});
-  total += straightScore;
-
-  return {total, estimatedWinPct: total / 2, breakdown};
-}
-
-function verdict(score){
-  if(score >= 32) return `<span class="good">Raise/call candidate: 32+ points.</span>`;
-  if(score >= 28) return `<span class="warn">Playable call candidate: 28+ points.</span>`;
-  return `<span class="bad">Below suggested playable threshold.</span>`;
-}
-
-function renderResult(el, hand){
-  const res = scoreHand(hand);
-  el.innerHTML = `
-    <div class="hand">${hand.map(cardHtml).join('')}</div>
-    <div class="scoreBig">${res.total}</div>
-    <div class="verdict">Estimated win % vs 9 opponents if dealt to showdown: about ${res.estimatedWinPct.toFixed(1)}%. ${verdict(res.total)}</div>
-    <div class="breakdown">${res.breakdown.map(b => `<div class="breakItem"><strong>${b.section}: ${b.points >= 0 ? '+' : ''}${b.points}</strong><br>${b.text}</div>`).join('')}</div>
-  `;
-}
-
-function makePickers(){
-  const root = document.getElementById('pickers');
-  root.innerHTML = '';
+function setHand(hand){
   for(let i=0;i<4;i++){
-    const div = document.createElement('div');
-    div.className = 'cardPicker';
-    div.innerHTML = `<label>Card ${i+1}</label><br><br>
-      <select class="rankSel">${RANKS.map(r=>`<option>${r}</option>`).join('')}</select>
-      <select class="suitSel">${SUITS.map(s=>`<option value="${s}">${SUIT_SYMBOL[s]}</option>`).join('')}</select>`;
-    root.appendChild(div);
+    document.getElementById("r"+i).value=hand[i].rank;
+    document.getElementById("s"+i).value=hand[i].suit;
   }
-  setHandInPickers([{rank:'A',suit:'s'},{rank:'K',suit:'s'},{rank:'A',suit:'h'},{rank:'K',suit:'h'}]);
-}
-function getHandFromPickers(){
-  const cards = [...document.querySelectorAll('.cardPicker')].map(div => ({
-    rank: div.querySelector('.rankSel').value,
-    suit: div.querySelector('.suitSel').value
-  }));
-  const seen = new Set(cards.map(c => c.rank + c.suit));
-  if(seen.size !== 4) throw new Error('Duplicate physical card selected. Pick four unique cards.');
-  return cards;
-}
-function setHandInPickers(hand){
-  [...document.querySelectorAll('.cardPicker')].forEach((div,i)=>{
-    div.querySelector('.rankSel').value = hand[i].rank;
-    div.querySelector('.suitSel').value = hand[i].suit;
-  });
 }
 
-let currentQuiz = null;
-function plausibleChoices(score){
-  const deltas = [-8,-6,-4,-3,-2,2,3,4,6,8,10,-10];
-  const choices = new Set([score]);
-  while(choices.size < 4){
-    const d = deltas[Math.floor(Math.random() * deltas.length)];
-    choices.add(Math.max(0, score + d));
+function scoreSelected(){
+  const out=document.getElementById("scoreOut");
+  try{
+    const hand=selectedHand();
+    const r=scoreHand(hand);
+    out.innerHTML = `<div class="hand">${hand.map(cardText).join(" ")}</div>
+      <h3>${r.total} points</h3>
+      <div class="breakdown">${r.breakdown}</div>`;
+  }catch(e){
+    out.innerHTML = `<p class="bad">${e.message}</p>`;
   }
-  return [...choices].sort(() => Math.random() - 0.5);
 }
+
+function randomizeHand(){
+  setHand(randomHand());
+  scoreSelected();
+}
+
+let currentQuiz=null;
+
+function plausibleAnswers(correct){
+  const set=new Set([correct]);
+  const offsets=[-8,-6,-4,-3,-2,2,3,4,6,8,10,-10];
+  shuffle(offsets);
+  for(const off of offsets){
+    if(set.size>=4) break;
+    const v=Math.max(0,correct+off);
+    if(v!==correct) set.add(v);
+  }
+  while(set.size<4) set.add(Math.max(0, correct + Math.floor(Math.random()*17)-8));
+  return shuffle([...set]);
+}
+
 function newQuiz(){
-  const hand = randomHand();
-  const res = scoreHand(hand);
-  currentQuiz = {hand, score:res.total};
-  document.getElementById('quizHand').innerHTML = hand.map(cardHtml).join('');
-  document.getElementById('quizResult').innerHTML = '';
-  document.getElementById('quizChoices').innerHTML = plausibleChoices(res.total).map(v => `<button class="choice" data-v="${v}">${v}</button>`).join('');
-  document.querySelectorAll('.choice').forEach(btn => btn.onclick = () => answerQuiz(Number(btn.dataset.v)));
-}
-function answerQuiz(v){
-  document.querySelectorAll('.choice').forEach(btn => {
-    const val = Number(btn.dataset.v);
-    btn.disabled = true;
-    if(val === currentQuiz.score) btn.classList.add('correct');
-    else if(val === v) btn.classList.add('wrong');
-  });
-  const res = scoreHand(currentQuiz.hand);
-  document.getElementById('quizResult').innerHTML = `
-    <p>${v === currentQuiz.score ? 'Correct.' : `Nope. Correct answer: ${currentQuiz.score}.`}</p>
-    <details open><summary>Show calculation</summary>
-      <div class="breakdown">${res.breakdown.map(b => `<div class="breakItem"><strong>${b.section}: ${b.points >= 0 ? '+' : ''}${b.points}</strong><br>${b.text}</div>`).join('')}</div>
-    </details>`;
+  const hand=randomHand();
+  const r=scoreHand(hand);
+  currentQuiz={hand,score:r.total,breakdown:r.breakdown};
+  const answers=plausibleAnswers(r.total);
+  document.getElementById("quizOut").innerHTML =
+    `<div class="hand">${hand.map(cardText).join(" ")}</div>
+     <p>What is the Hutchinson point value?</p>
+     <div class="answers">
+       ${answers.map(a=>`<button onclick="answerQuiz(${a})">${a} points</button>`).join("")}
+     </div>
+     <div id="quizResult"></div>`;
 }
 
-makePickers();
-renderResult(document.getElementById('scoreOutput'), getHandFromPickers());
-document.getElementById('scoreBtn').onclick = () => {
-  try { renderResult(document.getElementById('scoreOutput'), getHandFromPickers()); }
-  catch(e){ document.getElementById('scoreOutput').innerHTML = `<p class="bad">${e.message}</p>`; }
-};
-document.getElementById('randomBtn').onclick = () => { const h = randomHand(); setHandInPickers(h); renderResult(document.getElementById('scoreOutput'), h); };
-document.getElementById('scoreTab').onclick = () => { scoreView.classList.remove('hidden'); quizView.classList.add('hidden'); scoreTab.classList.add('active'); quizTab.classList.remove('active'); };
-document.getElementById('quizTab').onclick = () => { quizView.classList.remove('hidden'); scoreView.classList.add('hidden'); quizTab.classList.add('active'); scoreTab.classList.remove('active'); if(!currentQuiz) newQuiz(); };
-document.getElementById('nextQuiz').onclick = newQuiz;
+function answerQuiz(a){
+  const ok=a===currentQuiz.score;
+  document.getElementById("quizResult").innerHTML =
+    `<p class="${ok?'good':'bad'}">${ok ? "Correct." : "Wrong."} Actual score: ${currentQuiz.score}</p>
+     <div class="breakdown">${currentQuiz.breakdown}</div>`;
+}
+
+function handFrom(str){
+  const parts=str.trim().split(/\s+/);
+  return parts.map(p=>({rank:p[0],suit:p.slice(1)}));
+}
+
+function runTests(){
+  const tests=[
+    ["A♠ K♠ A♥ K♥",54,"AAKK double suited"],
+    ["9♠ 8♠ 9♦ 8♦",32,"9988 double suited"],
+    ["Q♠ Q♦ 9♥ 9♣",28,"QQ99"],
+    ["A♠ K♦ Q♥ T♠",31,"AKQT suited ace"],
+    ["A♠ 3♠ K♦ 4♦",30,"A34K double suited"],
+    ["A♠ K♦ 7♥ 2♣",4,"AK only"],
+    ["Q♠ 9♦ 4♥ 2♣",4,"Q9 two-gap connector"],
+    ["7♠ 7♦ 2♥ 3♣",15,"small pair plus 23 connector"],
+    ["A♠ A♦ A♥ K♣",4,"trips no pair points, AK connector only"]
+  ];
+
+  let html="";
+  let pass=0;
+  for(const [s,exp,name] of tests){
+    const got=scoreHand(handFrom(s)).total;
+    const ok=got===exp;
+    if(ok) pass++;
+    html += `<div>${ok?"✅":"❌"} ${name}: expected ${exp}, got ${got}</div>`;
+  }
+
+  // Fuzz test: make sure no random hand crashes.
+  let fuzzOk=true;
+  for(let i=0;i<5000;i++){
+    const h=randomHand();
+    const r=scoreHand(h);
+    if(!Number.isFinite(r.total)){fuzzOk=false;break;}
+  }
+  html += `<p>${fuzzOk?"✅":"❌"} 5,000 random hands scored without crashing.</p>`;
+  html = `<p><b>${pass}/${tests.length}</b> fixed tests passed.</p>` + html;
+  document.getElementById("testOut").innerHTML=html;
+}
+
+buildSelectors();
+setHand(handFrom("A♠ K♠ A♥ K♥"));
+scoreSelected();
 </script>
 </body>
 </html>
